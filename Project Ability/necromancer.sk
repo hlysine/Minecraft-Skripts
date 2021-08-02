@@ -1,0 +1,98 @@
+variables:
+  {nm_ability_active} = false
+  {nm_cooling_down} = false
+
+function nm_cooldown(p: player):
+  set the cooldown of ender pearl for {_p} to 120 seconds
+  loop 1200 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {nm_cooling_down} to false
+
+function nm_track_target(p: player, mob: entity):
+  while {_mob} is alive:
+    if "%target of {_p}%" is not "<none>":
+      set target of {_mob} to target of {_p}
+    if target of {_mob} is {_p}:
+      clear target of {_mob}
+    play 5 of soul at {_mob} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    play 10 of enchant at target of {_mob} offset by vector(0.5, 1, 0.5) with extra 0.05
+    wait 0.5 seconds
+
+function nm_spawn_preempt(p: player, mob: entity):
+  set {_loc} to location of {_mob}
+  set {_particleLoc} to {_loc}
+  set y-coordinate of {_particleLoc} to y-coordinate of {_particleLoc} + 1.5
+  loop 11 times:
+    set y-coordinate of {_loc} to y-coordinate of {_loc} + 0.1
+    teleport {_mob} to {_loc}
+    play 2 of squid_ink at {_particleLoc} offset by vector(0.5, 1, 0.5) with extra 0.02
+    wait 0.1 seconds
+
+  set name of {_mob} to "%{-nm_player_name}%'s slave"
+  add "{NoAI:0b,PersistenceRequired:0b}" to nbt of {_mob}
+  nm_track_target({_p}, {_mob})
+
+on join:
+  if event-player's name is {-nm_player_name}:
+    set {nm_ability_active} to false
+    set {nm_cooling_down} to true
+    nm_cooldown(event-player)
+
+on target:
+  if event-entity is skeleton:
+    if name of target is {-nm_player_name}:
+      play 2 of soul at target offset by vector(0.5, 0.5, 0.5) with extra 0.02
+      cancel event
+    else if target is skeleton:
+      if name of event-entity is "%{-nm_player_name}%'s slave":
+        if name of target is "%{-nm_player_name}%'s slave":
+          cancel event
+
+on rightclick:
+  if event-player is holding ender pearl in main hand:
+    if event-player's name is {-nm_player_name}:
+      cancel event
+      if {nm_ability_active} is false:
+        if {nm_cooling_down} is false:
+          # pre-activation
+          set {nm_ability_active} to true
+          set {nm_cooling_down} to true
+          play sound "entity.zombie.ambient" at event-player
+          if game mode of event-player is not creative:
+            remove 1 of ender pearl from event-player's inventory
+
+          # warm-up sequence
+          set the cooldown of ender pearl for event-player to 3 seconds
+          create bossbar titled "Charging up" and id "necromancer-warmup" for event-player with progress 0 with colors white
+          loop 30 times:
+            set bossbar "necromancer-warmup" value to loop-number / 3 * 10
+            play 5 of poof at event-player offset by vector(0.5, 0.5, 0.5) with extra 0.02
+            wait 0.1 seconds
+          remove bossbar "necromancer-warmup"
+
+          loop blocks in radius 10 around player:
+            if loop-block is air:
+              if block above loop-block is air:
+                if block below loop-block is not air:
+                  add loop-block's location to {_locs::*}
+
+          create bossbar titled "&dNecromancer" and id "necromancer" for event-player with progress 100 with colors purple
+          loop 10 times:
+            set bossbar "necromancer" value to 100 - loop-number * 10
+            set {_loc} to random element of {_locs::*}
+            set y-coordinate of {_loc} to y-coordinate of {_loc} - 1.5
+            spawn skeleton at {_loc} with nbt "{NoAI:1b}"
+            wait 1 tick
+            nm_spawn_preempt(event-player, last spawned entity)
+            wait 0.5 seconds
+          remove bossbar "necromancer"
+
+          set {nm_ability_active} to false
+
+          # cooldown
+          nm_cooldown(event-player)
+
+on projectile hit:
+  if name of shooter is "%{-nm_player_name}%'s slave":
+    add "{life:800}" to nbt of projectile

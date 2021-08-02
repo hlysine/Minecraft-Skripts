@@ -1,0 +1,140 @@
+variables:
+  {ws_cooling_down} = false
+
+on load:
+  clear {-ws_ender_pearl_hitting::*}
+  clear {-ws_ender_pearl_flying::*}
+
+function ws_cooldown(p: player):
+  wait 1 tick
+  set the cooldown of ender pearl for {_p} to 2.5 seconds
+  loop 25 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {ws_cooling_down} to false
+
+function getToolDurability(p: player) :: number:
+  set {_durability} to 0
+
+  if damage of {_p}'s tool is 0:
+    set {_durability} to max durability of {_p}'s tool
+  else:
+    set {_durability} to max durability of {_p}'s tool - damage of {_p}'s tool
+
+  return {_durability}
+
+function blocksInCube(p: location, r: number) :: blocks:
+  set {_loc1} to {_p}
+  set {_loc2} to {_p}
+
+  remove {_r} from x coord of {_loc1}
+  remove {_r} from y coord of {_loc1}
+  remove {_r} from z coord of {_loc1}
+
+  add {_r} to x coord of {_loc2}
+  add {_r} to y coord of {_loc2}
+  add {_r} to z coord of {_loc2}
+
+  return blocks within {_loc1} to {_loc2}
+
+on join:
+  if event-player's name is {-ws_player_name}:
+    set {ws_cooling_down} to true
+    ws_cooldown(event-player)
+
+on shoot:
+  if shooter's name is {-ws_player_name}:
+    if shooter is holding ender pearl in off hand:
+      if projectile is ender pearl:
+        if {ws_cooling_down} is false:
+          if getToolDurability(shooter) is greater than 1:
+            set {ws_cooling_down} to true
+
+            set {-ws_ender_pearl_flying::%uuid of projectile%} to true
+
+            set {_v} to velocity of projectile
+            set vector yaw of {_v} to yaw of shooter
+            set vector pitch of {_v} to pitch of shooter
+            set vector length of {_v} to 2.3
+
+            add "{NoGravity:1b}" to nbt of projectile
+            set velocity of projectile to {_v}
+
+            ws_cooldown(shooter)
+
+            wait 3 seconds
+
+            delete {-ws_ender_pearl_flying::%uuid of projectile%}
+
+            kill projectile
+          else:
+            cancel event
+        else:
+          cancel event
+
+on projectile hit:
+  if projectile is a ender pearl:
+    if {-ws_ender_pearl_flying::%uuid of projectile%} is set:
+      if shooter's name is {-ws_player_name}:
+        set {-ws_ender_pearl_hitting::%uuid of shooter%} to true
+
+        set {_p} to location of projectile
+        set {_v} to velocity of projectile
+        set vector length of {_v} to 0.5
+        set {_cnt} to 0
+
+        while "%block at {_p}%" parsed as item type is not solid:
+          set {_p} to {_p} offset by {_v}
+          set {_cnt} to {_cnt} + 1
+
+        if {_cnt} is greater than 3:
+          set {_p} to location of projectile
+          set vector length of {_v} to 1.5
+          set {_p} to {_p} offset by {_v}
+
+        set x-coordinate of {_p} to floor(x-coordinate of {_p}) + 0.5
+        set y-coordinate of {_p} to floor(y-coordinate of {_p}) + 0.5
+        set z-coordinate of {_p} to floor(z-coordinate of {_p}) + 0.5
+
+        show happy villager at cube outline at {_p} with radius 2 and density 5
+
+        set {_u} to level of unbreaking of shooter's tool
+        if "%{_u}%" is "<none>":
+          set {_u} to 0
+
+        play sound "entity.dragon_fireball.explode" at projectile
+
+        loop blocksInCube({_p}, 1):
+          # If a block exists
+          if loop-block is not air:
+            # If it is breakable
+            if shooter's tool can break loop-block:
+              set {_itemType} to "%loop-block%" parsed as item type
+
+              # Break naturally
+              break loop-block using shooter's tool
+
+              # Determine whether we should reduce tool durability
+              if {_itemType} is solid:
+                if loop-block is air:
+                  if random integer from 0 to {_u} is 0:
+                    damage shooter's tool by 1
+
+        if getToolDurability(shooter) is less than 1:
+          repair shooter's tool by 1
+
+        wait 1 tick
+        delete {-ws_ender_pearl_hitting::%uuid of shooter%}
+        delete {-ws_ender_pearl_flying::%uuid of projectile%}
+
+on teleport:
+  if event-player's name is {-ws_player_name}:
+    if "%teleport cause%" is "ender pearl":
+      if {-ws_ender_pearl_hitting::%uuid of event-player%} is set:
+        cancel event
+
+on damage:
+  if victim's name is {-ws_player_name}:
+    if damage cause is fall:
+      if {-ws_ender_pearl_hitting::%uuid of victim%} is set:
+        cancel event

@@ -1,0 +1,76 @@
+variables:
+  {itv_ability_active} = false
+  {itv_cooling_down} = false
+
+function itv_cooldown(p: player):
+  set the cooldown of ender pearl for {_p} to 10 seconds
+  loop 100 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {itv_cooling_down} to false
+
+on join:
+  if event-player's name is {-itv_player_name}:
+    if "%block above event-player%" parsed as item type is not occluding:
+      set the event-player's gamemode to survival
+    set {itv_ability_active} to false
+    set {itv_cooling_down} to true
+    itv_cooldown(event-player)
+
+
+on rightclick:
+  if event-player is holding ender pearl in main hand:
+    if event-player's name is {-itv_player_name}:
+      cancel event
+      if {itv_ability_active} is false:
+        if {itv_cooling_down} is false:
+          # pre-activation
+          set {itv_ability_active} to true
+          set {itv_cooling_down} to true
+          play sound "entity.phantom.swoop" at event-player
+          if game mode of event-player is not creative:
+            remove 1 of ender pearl from event-player's inventory
+
+          # warm-up sequence
+          set the cooldown of ender pearl for event-player to 2 seconds
+          create bossbar titled "Charging up" and id "into-the-void-warmup" for event-player with progress 0 with colors white
+          loop 20 times:
+            set bossbar "into-the-void-warmup" value to loop-number * 5
+            play 5 of poof at event-player offset by vector(0.5, 0.5, 0.5) with extra 0.02
+            wait 0.1 seconds
+          remove bossbar "into-the-void-warmup"
+
+          set {_prevGamemode} to game mode of event-player
+          set the event-player's game mode to spectator
+          apply night vision of tier 1 to event-player for 5 seconds
+          apply conduit power of tier 1 to event-player for 5 seconds
+          set {_loc} to location of event-player
+          set y-coordinate of {_loc} to y-coordinate of {_loc} + 0.5
+          teleport event-player to {_loc}
+
+          # activating
+          create bossbar titled "&dInto the Void" and id "into-the-void" for event-player with progress 100 with colors purple
+          set {_last_location} to location of event-player
+          loop 100 times:
+            set bossbar "into-the-void" value to 100 - loop-number
+            if "%block above event-player%" parsed as item type is occluding:
+              teleport event-player to {_last_location}
+            set {_last_location} to location of event-player
+            play 10 of dragon breath at event-player offset by vector(0.5, 1, 0.5) with extra 0.02
+            wait 0.05 seconds
+          remove bossbar "into-the-void"
+
+          # post-activation
+          set the event-player's gamemode to {_prevGamemode}
+          remove night vision from event-player
+          remove conduit power from event-player
+          set {itv_ability_active} to false
+
+          # cooldown
+          itv_cooldown(event-player)
+
+on teleport:
+  if event-player's name is {-itv_player_name}:
+    if teleport cause is SPECTATE:
+      if {itv_ability_active} is true:
+        cancel event
