@@ -3,8 +3,8 @@ variables:
   {nm_cooling_down} = false
 
 function nm_cooldown(p: player):
-  set the cooldown of ender pearl for {_p} to 120 seconds
-  loop 1200 times:
+  set the cooldown of ender pearl for {_p} to 90 seconds
+  loop 900 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {nm_cooling_down} to false

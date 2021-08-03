@@ -1,9 +1,9 @@
 on script load:
-  set {-itv_player_name} to "null"
-  set {-ws_player_name} to "null"
-  set {-nm_player_name} to "null"
-  set {-pg_player_name} to "null"
-  set {-mr_player_name} to "henry_ys"
+  set {-itv_player_name} to "henry_ys" # into the void
+  set {-ws_player_name} to "alexdash0080" # worldshaper
+  set {-nm_player_name} to "AtALPHA01" # necromancer
+  set {-pg_player_name} to "null" # portal gun
+  set {-mr_player_name} to "sunnyho120" # mirage
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -23,9 +23,9 @@ command /ability <player=%event-player%>:
       send "Summon skeletons to fight whatever the summoner is looking at. Summoned skeletons obey commands until death." to event-player
       send "Passive ability: No skeletons will ever actively attack the summoner." to event-player
       send "&7Activation: main hand" to event-player
-      send "&7Charge up: 3+1s   Duration: 5s   Cool down: 120s" to event-player
+      send "&7Charge up: 3+1s   Duration: 5s   Cool down: 90s" to event-player
     if name of arg-1 is {-mr_player_name}:
       send "%name of arg-1% - &2&lApex - Life of the Party" to event-player
       send "Deploy a team of decoys to distract enemies. Decoys last for a set amount of time and will explode when attacked by players." to event-player
       send "&7Activation: off hand" to event-player
-      send "&7Charge up: 2+0.75s   Duration: 30s   Cool down: 45s" to event-player
+      send "&7Charge up: 2+0.75s   Duration: 45s   Cool down: 45s" to event-player

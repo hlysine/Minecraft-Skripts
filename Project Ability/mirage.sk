@@ -28,7 +28,7 @@ on join:
 
 function mr_track_citizen(p: player, c: number):
   set {_prevTarget} to "<none>"
-  loop 60 times:
+  loop 90 times:
     if citizen {_c} is not alive:
       continue loop
 
@@ -94,7 +94,7 @@ on rightclick:
                   add loop-block's location to {_locs::*}
 
           if size of {_locs::*} is greater than 0:
-            loop 3 times:
+            loop 4 times:
               set {_loc} to random element of {_locs::*}
               set y-coordinate of {_loc} to 300
               create citizen named {-mr_player_name} at {_loc}
@@ -104,8 +104,14 @@ on rightclick:
             wait 5 ticks
 
             loop {-mr_citizens::*}:
+              if chestplate of event-player is elytra:
+                if "%enchantments of chestplate of event-player%" is "<none>":
+                  add "{Inventory:[{Slot:102b,id:""minecraft:elytra"",Count:1b}]}" to nbt of citizen {-mr_citizens::%loop-index%}
+                else:
+                  add "{Inventory:[{Slot:102b,id:""minecraft:elytra"",Count:1b,tag:{Enchantments:[{lvl:3s,id:""minecraft:unbreaking""}]}}]}" to nbt of citizen {-mr_citizens::%loop-index%}
+              else:
+                equip citizen {-mr_citizens::%loop-index%} with chestplate of event-player
               equip citizen {-mr_citizens::%loop-index%} with helmet of event-player
-              equip citizen {-mr_citizens::%loop-index%} with chestplate of event-player
               equip citizen {-mr_citizens::%loop-index%} with leggings of event-player
               equip citizen {-mr_citizens::%loop-index%} with boots of event-player
               make citizen {-mr_citizens::%loop-index%} hold tool of event-player
@@ -127,10 +133,10 @@ on rightclick:
 
             set name of sidebar of event-player to "Clones"
             create bossbar titled "&dMirage" and id "mirage" for event-player with progress 100 with colors purple
-            loop 60 times:
+            loop 90 times:
               if size of {-mr_citizens::*} is less than 1:
                 continue
-              set bossbar "mirage" value to 100 - loop-value / 60 * 100
+              set bossbar "mirage" value to 100 - loop-value / 90 * 100
               set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
               wait 0.5 seconds
             wipe event-player sidebar
@@ -149,7 +155,7 @@ function trigger_hit(c: number):
   play sound "entity.generic.explode" at citizen {_c}
   loop all entities in radius 4 around location of citizen {_c}:
     if name of loop-entity is not {-mr_player_name}:
-      damage loop-entity by 5 hearts
+      damage loop-entity by 7 hearts
   remove citizen {_c}
   remove {_c} from {-mr_citizens::*}
 
