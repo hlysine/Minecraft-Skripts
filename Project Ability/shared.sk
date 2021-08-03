@@ -2,7 +2,8 @@ on script load:
   set {-itv_player_name} to "null"
   set {-ws_player_name} to "null"
   set {-nm_player_name} to "null"
-  set {-pg_player_name} to "henry_ys"
+  set {-pg_player_name} to "null"
+  set {-mr_player_name} to "henry_ys"
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability

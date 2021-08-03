@@ -1,0 +1,161 @@
+variables:
+  {mr_ability_active} = false
+  {mr_cooling_down} = false
+
+function mr_clear_citizens():
+  loop {-mr_citizens::*}:
+    remove citizen {-mr_citizens::%loop-index%}
+  clear {-mr_citizens::*}
+
+on load:
+  mr_clear_citizens()
+  loop all entities:
+    if loop-entity is citizen:
+      remove citizen citizen id of loop-entity
+
+function mr_cooldown(p: player):
+  set the cooldown of ender pearl for {_p} to 60 seconds
+  loop 600 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {mr_cooling_down} to false
+
+on join:
+  if event-player's name is {-mr_player_name}:
+    set {mr_ability_active} to false
+    set {mr_cooling_down} to true
+    mr_cooldown(event-player)
+
+function mr_track_citizen(p: player, c: number):
+  loop 60 times:
+    if citizen {_c} is not alive:
+      continue loop
+
+    set {_target} to "<none>"
+    if "%target of {_p}%" is not "<none>":
+      set {_target} to target of {_p}
+      if target of {_p} is citizen:
+        set {_target} to "<none>"
+    if "%{_target}%" is not "<none>":
+      make citizen {_c} look at location of target of {_p}
+      set {_loc} to location of target of {_p}
+      set x-coordinate of {_loc} to x-coordinate of {_loc} + random integer from -2 to 2
+      set z-coordinate of {_loc} to z-coordinate of {_loc} + random integer from -2 to 2
+      move citizen {_c} to {_loc} at speed random number from 1.2 to 1.5
+      if distance between location of target of {_p} and location of citizen {_c} is less than 3:
+        if random integer from 1 to 2 is 1:
+          make citizen {_c} swing arm
+      else:
+        if random integer from 1 to 4 is 1:
+          make citizen {_c} swing arm
+    else:
+      set {_loc} to location of {_p}
+      set x-coordinate of {_loc} to x-coordinate of {_loc} + random integer from -2 to 2
+      set z-coordinate of {_loc} to z-coordinate of {_loc} + random integer from -2 to 2
+      move citizen {_c} to {_loc} at speed random number from 1.2 to 1.5
+    play 1 of enchant at target of {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.05
+    wait 0.5 seconds
+
+  play 10 of poof at location of citizen {_c} offset by vector(0.5, 1, 0.5) with extra 0.05
+  remove citizen {_c}
+  remove {_c} from {-mr_citizens::*}
+
+on rightclick:
+  if event-player is holding ender pearl in off hand:
+    if event-player's name is {-mr_player_name}:
+      cancel event
+      if {mr_ability_active} is false:
+        if {mr_cooling_down} is false:
+          # pre-activation
+          set {mr_ability_active} to true
+          set {mr_cooling_down} to true
+
+          play sound "entity.illusioner.cast_spell" at event-player
+          if game mode of event-player is not creative:
+            remove 1 of ender pearl from event-player's inventory
+
+          # warm-up sequence
+          set the cooldown of ender pearl for event-player to 2 seconds
+          create bossbar titled "Charging up" and id "mirage-warmup" for event-player with progress 0 with colors white
+          loop 20 times:
+            set bossbar "mirage-warmup" value to loop-number * 5
+            play 2 of poof at event-player offset by vector(0.5, 0.5, 0.5) with extra 0.02
+            wait 0.1 seconds
+          remove bossbar "mirage-warmup"
+
+          mr_clear_citizens()
+
+          loop blocks in radius 6 around player:
+            if loop-block is air:
+              if block above loop-block is air:
+                if block below loop-block is not air or water or lava or fire or magma block:
+                  add loop-block's location to {_locs::*}
+
+          loop 3 times:
+            set {_loc} to random element of {_locs::*}
+            set y-coordinate of {_loc} to 300
+            create citizen named {-mr_player_name} at {_loc}
+            set {_id} to last created citizen id
+            add {_id} to {-mr_citizens::*}
+
+          wait 5 ticks
+
+          loop {-mr_citizens::*}:
+            equip citizen {-mr_citizens::%loop-index%} with helmet of event-player
+            equip citizen {-mr_citizens::%loop-index%} with chestplate of event-player
+            equip citizen {-mr_citizens::%loop-index%} with leggings of event-player
+            equip citizen {-mr_citizens::%loop-index%} with boots of event-player
+            make citizen {-mr_citizens::%loop-index%} hold tool of event-player
+            make citizen {-mr_citizens::%loop-index%} vulnerable
+            make citizen {-mr_citizens::%loop-index%} max health to 1
+
+          wait 1 second
+
+          loop {-mr_citizens::*}:
+            set {_loc} to random element of {_locs::*}
+            move citizen {-mr_citizens::%loop-index%} to {_loc}
+            mr_track_citizen(event-player, {-mr_citizens::%loop-index%})
+          set {_loc} to random element of {_locs::*}
+          set y-coordinate of {_loc} to y-coordinate of {_loc} - 0.4
+          teleport event-player to {_loc}
+
+          set name of sidebar of event-player to "Clones"
+          create bossbar titled "&dMirage" and id "mirage" for event-player with progress 100 with colors purple
+          loop 60 times:
+            if size of {-mr_citizens::*} is less than 1:
+              continue
+            set bossbar "mirage" value to 100 - loop-value / 60 * 100
+            set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
+            wait 0.5 seconds
+          wipe event-player sidebar
+          remove bossbar "mirage"
+
+          set {mr_ability_active} to false
+
+          # cooldown
+          mr_cooldown(event-player)
+
+function trigger_hit(c: number):
+  play 10 of explosion at citizen {_c} offset by vector(1, 1, 1) with extra 0.1
+  play sound "entity.generic.explode" at citizen {_c}
+  loop all entities in radius 4 around location of citizen {_c}:
+    if name of loop-entity is not {-mr_player_name}:
+      damage loop-entity by 5 hearts
+  remove citizen {_c}
+  remove {_c} from {-mr_citizens::*}
+
+on citizen left click:
+  trigger_hit(event-number)
+
+on damage:
+  if victim is citizen:
+    trigger_hit(citizen id of victim)
+
+on target:
+  if name of target is {-mr_player_name}:
+    if size of {-mr_citizens::*} is greater than 0:
+      loop {-mr_citizens::*}:
+        add citizen {-mr_citizens::%loop-index%} to {_list::*}
+      add target to {_list::*}
+
+      set target of event-entity to random element of {_list::*}
