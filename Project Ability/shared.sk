@@ -24,3 +24,8 @@ command /ability <player=%event-player%>:
       send "Passive ability: No skeletons will ever actively attack the summoner." to event-player
       send "&7Activation: main hand" to event-player
       send "&7Charge up: 3+1s   Duration: 5s   Cool down: 120s" to event-player
+    if name of arg-1 is {-mr_player_name}:
+      send "%name of arg-1% - &2&lApex - Life of the Party" to event-player
+      send "Deploy a team of decoys to distract enemies. Decoys last for a set amount of time and will explode when attacked by players." to event-player
+      send "&7Activation: off hand" to event-player
+      send "&7Charge up: 2+0.75s   Duration: 30s   Cool down: 45s" to event-player

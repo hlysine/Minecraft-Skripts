@@ -76,22 +76,25 @@ on rightclick:
               if block above loop-block is air:
                 if block below loop-block is not air or water or lava or fire or magma block:
                   add loop-block's location to {_locs::*}
+          if size of {_locs::*} is greater than 0:
+            create bossbar titled "&dNecromancer" and id "necromancer" for event-player with progress 100 with colors purple
+            loop 10 times:
+              set bossbar "necromancer" value to 100 - loop-number * 10
+              set {_loc} to random element of {_locs::*}
+              set y-coordinate of {_loc} to y-coordinate of {_loc} - 1.5
+              spawn skeleton at {_loc} with nbt "{NoAI:1b}"
+              wait 1 tick
+              nm_spawn_preempt(event-player, last spawned entity)
+              wait 0.5 seconds
+            remove bossbar "necromancer"
 
-          create bossbar titled "&dNecromancer" and id "necromancer" for event-player with progress 100 with colors purple
-          loop 10 times:
-            set bossbar "necromancer" value to 100 - loop-number * 10
-            set {_loc} to random element of {_locs::*}
-            set y-coordinate of {_loc} to y-coordinate of {_loc} - 1.5
-            spawn skeleton at {_loc} with nbt "{NoAI:1b}"
-            wait 1 tick
-            nm_spawn_preempt(event-player, last spawned entity)
-            wait 0.5 seconds
-          remove bossbar "necromancer"
+            set {nm_ability_active} to false
 
-          set {nm_ability_active} to false
-
-          # cooldown
-          nm_cooldown(event-player)
+            # cooldown
+            nm_cooldown(event-player)
+          else:
+            set {nm_ability_active} to false
+            set {nm_cooling_down} to false
 
 on projectile hit:
   if name of shooter is "%{-nm_player_name}%'s slave":

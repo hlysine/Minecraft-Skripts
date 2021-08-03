@@ -14,8 +14,8 @@ on load:
       remove citizen citizen id of loop-entity
 
 function mr_cooldown(p: player):
-  set the cooldown of ender pearl for {_p} to 60 seconds
-  loop 600 times:
+  set the cooldown of ender pearl for {_p} to 45 seconds
+  loop 450 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {mr_cooling_down} to false
@@ -27,6 +27,7 @@ on join:
     mr_cooldown(event-player)
 
 function mr_track_citizen(p: player, c: number):
+  set {_prevTarget} to "<none>"
   loop 60 times:
     if citizen {_c} is not alive:
       continue loop
@@ -35,7 +36,8 @@ function mr_track_citizen(p: player, c: number):
     if "%target of {_p}%" is not "<none>":
       set {_target} to target of {_p}
       if target of {_p} is citizen:
-        set {_target} to "<none>"
+        set {_target} to {_prevTarget}
+    set {_prevTarget} to {_target}
     if "%{_target}%" is not "<none>":
       make citizen {_c} look at location of target of {_p}
       set {_loc} to location of target of {_p}
@@ -91,49 +93,56 @@ on rightclick:
                 if block below loop-block is not air or water or lava or fire or magma block:
                   add loop-block's location to {_locs::*}
 
-          loop 3 times:
+          if size of {_locs::*} is greater than 0:
+            loop 3 times:
+              set {_loc} to random element of {_locs::*}
+              set y-coordinate of {_loc} to 300
+              create citizen named {-mr_player_name} at {_loc}
+              set {_id} to last created citizen id
+              add {_id} to {-mr_citizens::*}
+
+            wait 5 ticks
+
+            loop {-mr_citizens::*}:
+              equip citizen {-mr_citizens::%loop-index%} with helmet of event-player
+              equip citizen {-mr_citizens::%loop-index%} with chestplate of event-player
+              equip citizen {-mr_citizens::%loop-index%} with leggings of event-player
+              equip citizen {-mr_citizens::%loop-index%} with boots of event-player
+              make citizen {-mr_citizens::%loop-index%} hold tool of event-player
+              make citizen {-mr_citizens::%loop-index%} vulnerable
+              make citizen {-mr_citizens::%loop-index%} max health to 1
+
+            wait 5 ticks
+
+            loop {-mr_citizens::*}:
+              set {_loc} to random element of {_locs::*}
+              move citizen {-mr_citizens::%loop-index%} to {_loc}
+              mr_track_citizen(event-player, {-mr_citizens::%loop-index%})
+
+            wait 5 ticks
+
             set {_loc} to random element of {_locs::*}
-            set y-coordinate of {_loc} to 300
-            create citizen named {-mr_player_name} at {_loc}
-            set {_id} to last created citizen id
-            add {_id} to {-mr_citizens::*}
+            set y-coordinate of {_loc} to y-coordinate of {_loc} - 0.4
+            teleport event-player to {_loc}
 
-          wait 5 ticks
+            set name of sidebar of event-player to "Clones"
+            create bossbar titled "&dMirage" and id "mirage" for event-player with progress 100 with colors purple
+            loop 60 times:
+              if size of {-mr_citizens::*} is less than 1:
+                continue
+              set bossbar "mirage" value to 100 - loop-value / 60 * 100
+              set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
+              wait 0.5 seconds
+            wipe event-player sidebar
+            remove bossbar "mirage"
 
-          loop {-mr_citizens::*}:
-            equip citizen {-mr_citizens::%loop-index%} with helmet of event-player
-            equip citizen {-mr_citizens::%loop-index%} with chestplate of event-player
-            equip citizen {-mr_citizens::%loop-index%} with leggings of event-player
-            equip citizen {-mr_citizens::%loop-index%} with boots of event-player
-            make citizen {-mr_citizens::%loop-index%} hold tool of event-player
-            make citizen {-mr_citizens::%loop-index%} vulnerable
-            make citizen {-mr_citizens::%loop-index%} max health to 1
+            set {mr_ability_active} to false
 
-          wait 1 second
-
-          loop {-mr_citizens::*}:
-            set {_loc} to random element of {_locs::*}
-            move citizen {-mr_citizens::%loop-index%} to {_loc}
-            mr_track_citizen(event-player, {-mr_citizens::%loop-index%})
-          set {_loc} to random element of {_locs::*}
-          set y-coordinate of {_loc} to y-coordinate of {_loc} - 0.4
-          teleport event-player to {_loc}
-
-          set name of sidebar of event-player to "Clones"
-          create bossbar titled "&dMirage" and id "mirage" for event-player with progress 100 with colors purple
-          loop 60 times:
-            if size of {-mr_citizens::*} is less than 1:
-              continue
-            set bossbar "mirage" value to 100 - loop-value / 60 * 100
-            set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
-            wait 0.5 seconds
-          wipe event-player sidebar
-          remove bossbar "mirage"
-
-          set {mr_ability_active} to false
-
-          # cooldown
-          mr_cooldown(event-player)
+            # cooldown
+            mr_cooldown(event-player)
+          else:
+            set {mr_ability_active} to false
+            set {mr_cooling_down} to false
 
 function trigger_hit(c: number):
   play 10 of explosion at citizen {_c} offset by vector(1, 1, 1) with extra 0.1
