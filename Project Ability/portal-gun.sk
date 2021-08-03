@@ -1,0 +1,88 @@
+variables:
+  {pg_cooling_down} = false
+
+on load:
+  clear {-pg_ender_pearl_hitting::*}
+  clear {-pg_ender_pearl_flying::*}
+
+function pg_cooldown(p: player):
+  wait 1 tick
+  set the cooldown of ender pearl for {_p} to 2.5 seconds
+  loop 25 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {pg_cooling_down} to false
+
+on join:
+  if event-player's name is {-pg_player_name}:
+    set {pg_cooling_down} to true
+    pg_cooldown(event-player)
+
+on shoot:
+  if shooter's name is {-pg_player_name}:
+    if shooter is holding ender pearl in main hand:
+      if projectile is ender pearl:
+        if {pg_cooling_down} is false:
+          set {pg_cooling_down} to true
+
+          set {-pg_ender_pearl_flying::%uuid of projectile%} to true
+
+          # Correct the flight path of the pearl
+          set {_v} to velocity of projectile
+          set vector yaw of {_v} to yaw of shooter
+          set vector pitch of {_v} to pitch of shooter
+          set vector length of {_v} to 1.5
+
+          add "{NoGravity:1b}" to nbt of projectile
+          set velocity of projectile to {_v}
+
+          pg_cooldown(shooter)
+
+          # Kill pearl if it doesn't hit anything
+          wait 3 seconds
+
+          delete {-pg_ender_pearl_flying::%uuid of projectile%}
+
+          kill projectile
+        else:
+          cancel event
+
+on projectile hit:
+  if projectile is a ender pearl:
+    if {-pg_ender_pearl_flying::%uuid of projectile%} is set:
+      if shooter's name is {-pg_player_name}:
+        set {-pg_ender_pearl_hitting::%uuid of shooter%} to true
+
+        # Correct hit location of pearl
+        set {_p} to location of projectile
+        set {_v} to velocity of projectile
+        set vector length of {_v} to 0.1
+
+        while block at {_p} is not air:
+          set {_p} to {_p} offset by {_v}
+
+        set vector length of {_v} to -0.1
+        set {_p} to {_p} offset by {_v}
+
+        set x-coordinate of {_p} to floor(x-coordinate of {_p}) + 0.5
+        set y-coordinate of {_p} to floor(y-coordinate of {_p}) + 0.5
+        set z-coordinate of {_p} to floor(z-coordinate of {_p}) + 0.5
+
+        show happy villager at cube outline at {_p} with radius 0.5 and density 5
+
+
+        wait 1 tick
+        delete {-pg_ender_pearl_hitting::%uuid of shooter%}
+        delete {-pg_ender_pearl_flying::%uuid of projectile%}
+
+on teleport:
+  if event-player's name is {-pg_player_name}:
+    if "%teleport cause%" is "ender pearl":
+      if {-pg_ender_pearl_hitting::%uuid of event-player%} is set:
+        cancel event
+
+on damage:
+  if victim's name is {-pg_player_name}:
+    if damage cause is fall:
+      if {-pg_ender_pearl_hitting::%uuid of victim%} is set:
+        cancel event

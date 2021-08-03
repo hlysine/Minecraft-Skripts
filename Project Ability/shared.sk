@@ -1,7 +1,8 @@
 on script load:
-  set {-itv_player_name} to "henry_ys"
-  set {-ws_player_name} to "alexdash0080"
-  set {-nm_player_name} to "AtALPHA01"
+  set {-itv_player_name} to "null"
+  set {-ws_player_name} to "null"
+  set {-nm_player_name} to "null"
+  set {-pg_player_name} to "henry_ys"
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -9,13 +10,16 @@ command /ability <player=%event-player%>:
     if name of arg-1 is {-itv_player_name}:
       send "%name of arg-1% - &2&lApex - Into the Void" to event-player
       send "For a short duration, improve vision and switch to spectator mode for fast flying, leaving a particle trail behind. Cannot go through walls." to event-player
+      send "&7Activation: main hand" to event-player
       send "&7Charge up: 2s   Duration: 5s   Cool down: 10s" to event-player
     if name of arg-1 is {-ws_player_name}:
       send "%name of arg-1% - &2&lCreate - Worldshaper" to event-player
       send "Precisely throw an ender pearl in a straigt line using the off hand. When it hits a block, instantly mine a 3x3x3 cube using the tool held in main hand." to event-player
-      send "&7Charge up: 0s   Duration: 0s   Cool down: 3s" to event-player
+      send "&7Activation: off hand" to event-player
+      send "&7Charge up: 0s   Duration: 0s   Cool down: 2.5s" to event-player
     if name of arg-1 is {-nm_player_name}:
       send "%name of arg-1% - &2&lClash Royale - Skeleton Army" to event-player
       send "Summon skeletons to fight whatever the summoner is looking at. Summoned skeletons obey commands until death." to event-player
       send "Passive ability: No skeletons will ever actively attack the summoner." to event-player
+      send "&7Activation: main hand" to event-player
       send "&7Charge up: 3+1s   Duration: 5s   Cool down: 120s" to event-player

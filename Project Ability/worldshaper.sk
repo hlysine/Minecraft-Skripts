@@ -52,6 +52,7 @@ on shoot:
 
             set {-ws_ender_pearl_flying::%uuid of projectile%} to true
 
+            # Correct the flight path of the pearl
             set {_v} to velocity of projectile
             set vector yaw of {_v} to yaw of shooter
             set vector pitch of {_v} to pitch of shooter
@@ -62,6 +63,7 @@ on shoot:
 
             ws_cooldown(shooter)
 
+            # Kill pearl if it doesn't hit anything
             wait 3 seconds
 
             delete {-ws_ender_pearl_flying::%uuid of projectile%}
@@ -78,6 +80,7 @@ on projectile hit:
       if shooter's name is {-ws_player_name}:
         set {-ws_ender_pearl_hitting::%uuid of shooter%} to true
 
+        # Correct hit location of pearl
         set {_p} to location of projectile
         set {_v} to velocity of projectile
         set vector length of {_v} to 0.5
@@ -98,6 +101,7 @@ on projectile hit:
 
         show happy villager at cube outline at {_p} with radius 2 and density 5
 
+        # Break blocks
         set {_u} to level of unbreaking of shooter's tool
         if "%{_u}%" is "<none>":
           set {_u} to 0

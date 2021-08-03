@@ -74,7 +74,7 @@ on rightclick:
           loop blocks in radius 10 around player:
             if loop-block is air:
               if block above loop-block is air:
-                if block below loop-block is not air:
+                if block below loop-block is not air or water or lava or fire or magma block:
                   add loop-block's location to {_locs::*}
 
           create bossbar titled "&dNecromancer" and id "necromancer" for event-player with progress 100 with colors purple
