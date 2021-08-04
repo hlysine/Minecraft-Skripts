@@ -7,8 +7,8 @@ on load:
 
 function ws_cooldown(p: player):
   wait 1 tick
-  set the cooldown of ender pearl for {_p} to 2.5 seconds
-  loop 25 times:
+  set the cooldown of ender pearl for {_p} to 1 seconds
+  loop 10 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {ws_cooling_down} to false
@@ -121,11 +121,16 @@ on projectile hit:
               # Determine whether we should reduce tool durability
               if {_itemType} is solid:
                 if loop-block is air:
-                  if random integer from 0 to {_u} is 0:
-                    damage shooter's tool by 1
+                  if game mode of shooter is not creative:
+                    if random integer from 0 to {_u} is 0:
+                      if random integer from 0 to 1 is 0:
+                        damage shooter's tool by 1
 
         if getToolDurability(shooter) is less than 1:
           repair shooter's tool by 1
+
+        if random integer from 0 to 3 is less than 3:
+          drop 1 ender pearl at {_p}
 
         wait 1 tick
         delete {-ws_ender_pearl_hitting::%uuid of shooter%}

@@ -8,6 +8,10 @@ function mr_clear_citizens():
   clear {-mr_citizens::*}
 
 on load:
+  clear {-mr_player}
+  loop all players:
+    if name of loop-player is {-mr_player_name}:
+      set {-mr_player} to loop-player
   mr_clear_citizens()
   loop all entities:
     if loop-entity is citizen:
@@ -22,6 +26,7 @@ function mr_cooldown(p: player):
 
 on join:
   if event-player's name is {-mr_player_name}:
+    set {-mr_player} to event-player
     set {mr_ability_active} to false
     set {mr_cooling_down} to true
     mr_cooldown(event-player)
@@ -155,7 +160,10 @@ function trigger_hit(c: number):
   play sound "entity.generic.explode" at citizen {_c}
   loop all entities in radius 4 around location of citizen {_c}:
     if name of loop-entity is not {-mr_player_name}:
-      damage loop-entity by 7 hearts
+      if loop-entity is player:
+        make {-mr_player} damage loop-entity by 14
+      else:
+        damage loop-entity by 7 hearts
   remove citizen {_c}
   remove {_c} from {-mr_citizens::*}
 

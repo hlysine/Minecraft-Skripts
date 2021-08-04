@@ -1,10 +1,10 @@
 on script load:
-  set {-itv_player_name} to "null" # into the void
+  set {-itv_player_name} to "henry_ys" # into the void
   set {-ws_player_name} to "alexdash0080" # worldshaper
   set {-nm_player_name} to "AtALPHA01" # necromancer
   set {-pg_player_name} to "null" # portal gun
   set {-mr_player_name} to "sunnyho120" # mirage
-  set {-qc_player_name} to "henry_ys" # quincy
+  set {-qc_player_name} to "null" # quincy
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -20,7 +20,7 @@ command /ability <player=%event-player%>:
       send "%name of arg-1% - &2&lCreate - Worldshaper" to event-player
       send "Precisely throw an ender pearl in a straigt line using the off hand. When it hits a block, instantly mine a 3x3x3 cube using the tool held in main hand." to event-player
       send "&7Activation: off hand" to event-player
-      send "&7Charge up: 0s   Duration: 0s   Cool down: 2.5s" to event-player
+      send "&7Charge up: 0s   Duration: 0s   Cool down: 1s" to event-player
       set {_done} to true
     if name of arg-1 is {-nm_player_name}:
       send "%name of arg-1% - &2&lClash Royale - Skeleton Army" to event-player
