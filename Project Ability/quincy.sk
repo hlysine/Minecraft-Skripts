@@ -9,8 +9,8 @@ on load:
 
 function qc_cooldown(p: player):
   wait 1 tick
-  set the cooldown of ender pearl for {_p} to 10 seconds
-  loop 100 times:
+  set the cooldown of ender pearl for {_p} to 15 seconds
+  loop 150 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {qc_cooling_down} to false
@@ -47,7 +47,7 @@ on shoot:
 
         kill projectile
 
-    else if shooter is holding ender pearl in off hand:
+    else if shooter is holding ender pearl in main hand:
       if projectile is ender pearl:
         if {qc_cooling_down} is false:
           set {qc_cooling_down} to true

@@ -77,7 +77,6 @@ on rightclick:
           set {mr_ability_active} to true
           set {mr_cooling_down} to true
 
-          play sound "entity.illusioner.cast_spell" at event-player
           if game mode of event-player is not creative:
             remove 1 of ender pearl from event-player's inventory
 
@@ -89,6 +88,8 @@ on rightclick:
             play 2 of poof at event-player offset by vector(0.5, 0.5, 0.5) with extra 0.02
             wait 0.1 seconds
           remove bossbar "mirage-warmup"
+
+          play sound "entity.illusioner.cast_spell" at event-player
 
           mr_clear_citizens()
 

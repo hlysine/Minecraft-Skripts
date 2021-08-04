@@ -14,7 +14,7 @@ command /ability <player=%event-player%>:
       send "%name of arg-1% - &2&lApex - Into the Void" to event-player
       send "For a short duration, improve vision and switch to spectator mode for fast flying, leaving a particle trail behind. Cannot go through walls." to event-player
       send "&7Activation: main hand" to event-player
-      send "&7Charge up: 2s   Duration: 5s   Cool down: 10s" to event-player
+      send "&7Charge up: 1s   Duration: 5s   Cool down: 7.5s" to event-player
       set {_done} to true
     if name of arg-1 is {-ws_player_name}:
       send "%name of arg-1% - &2&lCreate - Worldshaper" to event-player
@@ -37,10 +37,10 @@ command /ability <player=%event-player%>:
       set {_done} to true
     if name of arg-1 is {-qc_player_name}:
       send "%name of arg-1% - &2&lBTD6 - Storm of Arrows" to event-player
-      send "Throw an ender pearl with the off hand to determine location. Once the ender pearl hits, summon a barrage of arrows from the sky tracking entities in range." to event-player
-      send "Passive ability: Arrows fired from a bow travel in a straight line and do not reduce the durability of the bow." to event-player
-      send "&7Activation: off hand" to event-player
-      send "&7Charge up: 0s   Duration: 5s   Cool down: 10s" to event-player
+      send "Throw an ender pearl to determine location. Once the ender pearl hits, summon a barrage of arrows from the sky tracking entities in range." to event-player
+      send "Passive ability: Arrows fired from a bow in main hand travel in a straight line and do not reduce the durability of the bow." to event-player
+      send "&7Activation: main hand" to event-player
+      send "&7Charge up: 0s   Duration: 5s   Cool down: 15s" to event-player
       set {_done} to true
     if {_done} is false:
       send "&cCannot find %name of arg-1%'s ability"

@@ -77,7 +77,7 @@ on rightclick:
                 if block below loop-block is not air or water or lava or fire or magma block:
                   add loop-block's location to {_locs::*}
           if size of {_locs::*} is greater than 0:
-            create bossbar titled "&dNecromancer" and id "necromancer" for event-player with progress 100 with colors purple
+            create bossbar titled "&dSkeleton Army" and id "necromancer" for event-player with progress 100 with colors purple
             loop 10 times:
               set bossbar "necromancer" value to 100 - loop-number * 10
               set {_loc} to random element of {_locs::*}

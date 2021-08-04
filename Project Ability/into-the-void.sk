@@ -1,10 +1,11 @@
 variables:
   {itv_ability_active} = false
   {itv_cooling_down} = false
+  {-itv_sneak_cancel} = 0
 
 function itv_cooldown(p: player):
-  set the cooldown of ender pearl for {_p} to 10 seconds
-  loop 100 times:
+  set the cooldown of ender pearl for {_p} to 7.5 seconds
+  loop 75 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {itv_cooling_down} to false
@@ -17,6 +18,14 @@ on join:
     set {itv_cooling_down} to true
     itv_cooldown(event-player)
 
+on sneak toggle:
+  if event-player's name is {-itv_player_name}:
+    if {itv_ability_active} is true:
+      set {_sneak} to {-itv_sneak_cancel}
+      set {-itv_sneak_cancel} to {-itv_sneak_cancel} + 1
+      wait 0.5 seconds
+      if {-itv_sneak_cancel} - {_sneak} is greater than 5:
+        set {itv_ability_active} to false
 
 on rightclick:
   if event-player is holding ender pearl in main hand:
@@ -25,17 +34,16 @@ on rightclick:
       if {itv_ability_active} is false:
         if {itv_cooling_down} is false:
           # pre-activation
-          set {itv_ability_active} to true
           set {itv_cooling_down} to true
           play sound "entity.phantom.swoop" at event-player
           if game mode of event-player is not creative:
             remove 1 of ender pearl from event-player's inventory
 
           # warm-up sequence
-          set the cooldown of ender pearl for event-player to 2 seconds
+          set the cooldown of ender pearl for event-player to 1 seconds
           create bossbar titled "Charging up" and id "into-the-void-warmup" for event-player with progress 0 with colors white
-          loop 20 times:
-            set bossbar "into-the-void-warmup" value to loop-number * 5
+          loop 10 times:
+            set bossbar "into-the-void-warmup" value to loop-number * 10
             play 2 of poof at event-player offset by vector(0.5, 0.5, 0.5) with extra 0.02
             wait 0.1 seconds
           remove bossbar "into-the-void-warmup"
@@ -50,14 +58,21 @@ on rightclick:
 
           # activating
           create bossbar titled "&dInto the Void" and id "into-the-void" for event-player with progress 100 with colors purple
+          set {-itv_sneak_cancel} to 0
+          set {itv_ability_active} to true
+
           set {_last_location} to location of event-player
           loop 100 times:
+            if {itv_ability_active} is false:
+              continue
             set bossbar "into-the-void" value to 100 - loop-number
             if "%block above event-player%" parsed as item type is occluding:
               teleport event-player to {_last_location}
             set {_last_location} to location of event-player
             play 10 of dragon breath at event-player offset by vector(0.5, 1, 0.5) with extra 0.02
-            wait 0.05 seconds
+            wait 1 tick
+          if "%block above event-player%" parsed as item type is occluding:
+            teleport event-player to {_last_location}
           remove bossbar "into-the-void"
 
           # post-activation
