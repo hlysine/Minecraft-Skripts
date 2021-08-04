@@ -9,8 +9,8 @@ on load:
 
 function qc_cooldown(p: player):
   wait 1 tick
-  set the cooldown of ender pearl for {_p} to 15 seconds
-  loop 150 times:
+  set the cooldown of ender pearl for {_p} to 10 seconds
+  loop 100 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {qc_cooling_down} to false
@@ -22,7 +22,6 @@ on join:
 
 on shoot:
   if shooter's name is {-qc_player_name}:
-    broadcast "shot%random number from -2.0 to 2%"
     if shooter is holding bow in main hand:
       if shooter's tool is bow:
         if damage of shooter's tool is greater than 0:
@@ -53,35 +52,39 @@ on shoot:
         if {qc_cooling_down} is false:
           set {qc_cooling_down} to true
           set {qc_ability_active} to true
-          if shooter is sneaking:
-            set {-qc_ender_pearl_flying::%uuid of projectile%} to true
+          # if shooter is sneaking:
+          set {-qc_ender_pearl_flying::%uuid of projectile%} to true
 
-            # Kill pearl if it doesn't hit anything
-            wait 5 seconds
+          # Kill pearl if it doesn't hit anything
+          wait 5 seconds
 
-            delete {-qc_ender_pearl_flying::%uuid of projectile%}
+          delete {-qc_ender_pearl_flying::%uuid of projectile%}
 
-            kill projectile
-          else:
-            cancel event
-            if game mode of shooter is not creative:
-              remove 1 of ender pearl from shooter's inventory
-            create bossbar titled "&dRapid Shot" and id "rapid-shot" for shooter with progress 100 with colors purple
-            loop 30 times:
-              set bossbar "rapid-shot" value to 100 - loop-number / 30 * 100
-              make shooter shoot arrow
-              add "{pickup:0b}" to nbt of last shot entity
-              wait 0.1 second
+          kill projectile
+          # else:
+          #   cancel event
+          #   if game mode of shooter is not creative:
+          #     remove 1 of ender pearl from shooter's inventory
+          #   create bossbar titled "&dRapid Shot" and id "rapid-shot" for shooter with progress 100 with colors purple
+          #   loop 30 times:
+          #     set bossbar "rapid-shot" value to 100 - loop-number / 30 * 100
+          #     make shooter shoot arrow
+          #     add "{pickup:0b}" to nbt of last shot entity
+          #     wait 0.1 second
 
-            remove bossbar "rapid-shot"
+          #   remove bossbar "rapid-shot"
 
-            set {qc_ability_active} to false
-            qc_cooldown(shooter)
+          #   set {qc_ability_active} to false
+          #   qc_cooldown(shooter)
         else:
           cancel event
 
 on projectile hit:
-  if projectile is a ender pearl:
+  if projectile is arrow:
+    if name of shooter is {-qc_player_name}:
+      wait 1 tick
+      add "{life:1000}" to nbt of projectile
+  else if projectile is ender pearl:
     if {-qc_ender_pearl_flying::%uuid of projectile%} is set:
       if shooter's name is {-qc_player_name}:
         set {-qc_ender_pearl_hitting::%uuid of shooter%} to true
