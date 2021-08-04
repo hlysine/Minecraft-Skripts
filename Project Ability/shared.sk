@@ -9,30 +9,38 @@ on script load:
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
   trigger:
+    set {_done} to false
     if name of arg-1 is {-itv_player_name}:
       send "%name of arg-1% - &2&lApex - Into the Void" to event-player
       send "For a short duration, improve vision and switch to spectator mode for fast flying, leaving a particle trail behind. Cannot go through walls." to event-player
       send "&7Activation: main hand" to event-player
       send "&7Charge up: 2s   Duration: 5s   Cool down: 10s" to event-player
+      set {_done} to true
     if name of arg-1 is {-ws_player_name}:
       send "%name of arg-1% - &2&lCreate - Worldshaper" to event-player
       send "Precisely throw an ender pearl in a straigt line using the off hand. When it hits a block, instantly mine a 3x3x3 cube using the tool held in main hand." to event-player
       send "&7Activation: off hand" to event-player
       send "&7Charge up: 0s   Duration: 0s   Cool down: 2.5s" to event-player
+      set {_done} to true
     if name of arg-1 is {-nm_player_name}:
       send "%name of arg-1% - &2&lClash Royale - Skeleton Army" to event-player
       send "Summon skeletons to fight whatever the summoner is looking at. Summoned skeletons obey commands until death." to event-player
       send "Passive ability: No skeletons will ever actively attack the summoner." to event-player
       send "&7Activation: main hand" to event-player
       send "&7Charge up: 3+1s   Duration: 5s   Cool down: 90s" to event-player
+      set {_done} to true
     if name of arg-1 is {-mr_player_name}:
       send "%name of arg-1% - &2&lApex - Life of the Party" to event-player
       send "Deploy a team of decoys to distract enemies. Decoys last for a set amount of time and will explode when attacked by players." to event-player
       send "&7Activation: off hand" to event-player
       send "&7Charge up: 2+1s   Duration: 45s   Cool down: 45s" to event-player
+      set {_done} to true
     if name of arg-1 is {-qc_player_name}:
       send "%name of arg-1% - &2&lBTD6 - Storm of Arrows" to event-player
       send "Throw an ender pearl with the off hand to determine location. Once the ender pearl hits, summon a barrage of arrows from the sky tracking entities in range." to event-player
       send "Passive ability: Arrows fired from a bow travel in a straight line and do not reduce the durability of the bow." to event-player
       send "&7Activation: off hand" to event-player
-      send "&7Charge up: 0s   Duration: 3s   Cool down: 10s" to event-player
+      send "&7Charge up: 0s   Duration: 5s   Cool down: 10s" to event-player
+      set {_done} to true
+    if {_done} is false:
+      send "&cCannot find %name of arg-1%'s ability"

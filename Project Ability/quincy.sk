@@ -101,14 +101,16 @@ on projectile hit:
               add loop-entity to {_entities::*}
 
         create bossbar titled "&dStorm of Arrows" and id "storm-of-arrows" for shooter with progress 100 with colors purple
-        loop 60 times:
-          set bossbar "storm-of-arrows" value to 100 - loop-number / 60 * 100
+        loop 100 times:
+          set bossbar "storm-of-arrows" value to 100 - loop-number
           if size of {_entities::*} is greater than 0:
             set {_e} to random element of {_entities::*}
             set {_loc} to location of {_e}
             set {_x} to random number between x-coordinate of {_loc} - 1.5 to x-coordinate of {_loc} + 1.5
             set {_y} to y-coordinate of {_loc} + 20
             set {_z} to random number between z-coordinate of {_loc} - 1.5 to z-coordinate of {_loc} + 1.5
+            if {_e} is not alive:
+              remove {_e} from {_entities::*}
           else:
             set {_loc} to {_p}
             set {_x} to random number between x-coordinate of {_loc} - 4 to x-coordinate of {_loc} + 4
