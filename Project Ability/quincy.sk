@@ -1,0 +1,138 @@
+variables:
+  {qc_ability_active} = false
+  {qc_cooling_down} = false
+
+on load:
+  clear {-qc_arrow_flying::*}
+  clear {-qc_ender_pearl_hitting::*}
+  clear {-qc_ender_pearl_flying::*}
+
+function qc_cooldown(p: player):
+  wait 1 tick
+  set the cooldown of ender pearl for {_p} to 15 seconds
+  loop 150 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {qc_cooling_down} to false
+
+on join:
+  if event-player's name is {-qc_player_name}:
+    set {qc_cooling_down} to true
+    qc_cooldown(event-player)
+
+on shoot:
+  if shooter's name is {-qc_player_name}:
+    broadcast "shot%random number from -2.0 to 2%"
+    if shooter is holding bow in main hand:
+      if shooter's tool is bow:
+        if damage of shooter's tool is greater than 0:
+          repair shooter's tool by 1
+      if projectile is arrow:
+        set {-qc_arrow_flying::%uuid of projectile%} to true
+
+        # Correct the flight path of the arrow
+        set {_v} to velocity of projectile
+        set {_s} to vector length of {_v}
+
+        set vector yaw of {_v} to yaw of shooter
+        set vector pitch of {_v} to pitch of shooter
+        set vector length of {_v} to {_s}
+
+        add "{NoGravity:1b}" to nbt of projectile
+        set velocity of projectile to {_v}
+
+        # Kill arrow if it doesn't hit anything
+        wait 5 seconds
+
+        delete {-qc_arrow_flying::%uuid of projectile%}
+
+        kill projectile
+
+    else if shooter is holding ender pearl in off hand:
+      if projectile is ender pearl:
+        if {qc_cooling_down} is false:
+          set {qc_cooling_down} to true
+          set {qc_ability_active} to true
+          if shooter is sneaking:
+            set {-qc_ender_pearl_flying::%uuid of projectile%} to true
+
+            # Kill pearl if it doesn't hit anything
+            wait 5 seconds
+
+            delete {-qc_ender_pearl_flying::%uuid of projectile%}
+
+            kill projectile
+          else:
+            cancel event
+            if game mode of shooter is not creative:
+              remove 1 of ender pearl from shooter's inventory
+            create bossbar titled "&dRapid Shot" and id "rapid-shot" for shooter with progress 100 with colors purple
+            loop 30 times:
+              set bossbar "rapid-shot" value to 100 - loop-number / 30 * 100
+              make shooter shoot arrow
+              add "{pickup:0b}" to nbt of last shot entity
+              wait 0.1 second
+
+            remove bossbar "rapid-shot"
+
+            set {qc_ability_active} to false
+            qc_cooldown(shooter)
+        else:
+          cancel event
+
+on projectile hit:
+  if projectile is a ender pearl:
+    if {-qc_ender_pearl_flying::%uuid of projectile%} is set:
+      if shooter's name is {-qc_player_name}:
+        set {-qc_ender_pearl_hitting::%uuid of shooter%} to true
+
+        # Correct hit location of pearl
+        set {_p} to location of projectile
+
+        show happy villager at cube outline at {_p} with radius 5 and density 5
+
+        clear {_entities::*}
+        loop all entities in radius 5 around {_p}:
+          if loop-entity is living entity:
+            if name of loop-entity is not {-qc_player_name}:
+              add loop-entity to {_entities::*}
+
+        create bossbar titled "&dStorm of Arrows" and id "storm-of-arrows" for shooter with progress 100 with colors purple
+        loop 60 times:
+          set bossbar "storm-of-arrows" value to 100 - loop-number / 60 * 100
+          if size of {_entities::*} is greater than 0:
+            set {_e} to random element of {_entities::*}
+            set {_loc} to location of {_e}
+            set {_x} to random number between x-coordinate of {_loc} - 1.5 to x-coordinate of {_loc} + 1.5
+            set {_y} to y-coordinate of {_loc} + 20
+            set {_z} to random number between z-coordinate of {_loc} - 1.5 to z-coordinate of {_loc} + 1.5
+          else:
+            set {_loc} to {_p}
+            set {_x} to random number between x-coordinate of {_loc} - 4 to x-coordinate of {_loc} + 4
+            set {_y} to y-coordinate of {_loc} + 20
+            set {_z} to random number between z-coordinate of {_loc} - 4 to z-coordinate of {_loc} + 4
+          make shooter shoot arrow
+          add "{pickup:0b,crit:1b,damage:3.0}" to nbt of last shot entity
+          teleport last shot entity to location at {_x}, {_y}, {_z}
+          set velocity of last shot entity to (vector 0, -3, 0)
+          wait 1 tick
+        remove bossbar "storm-of-arrows"
+
+        set {qc_ability_active} to false
+        qc_cooldown(shooter)
+
+        wait 1 tick
+        delete {-qc_ender_pearl_hitting::%uuid of shooter%}
+        delete {-qc_ender_pearl_flying::%uuid of projectile%}
+
+on teleport:
+  if event-player's name is {-qc_player_name}:
+    if "%teleport cause%" is "ender pearl":
+      if {-qc_ender_pearl_hitting::%uuid of event-player%} is set:
+        cancel event
+
+on damage:
+  if victim's name is {-qc_player_name}:
+    if damage cause is fall:
+      if {-qc_ender_pearl_hitting::%uuid of victim%} is set:
+        cancel event

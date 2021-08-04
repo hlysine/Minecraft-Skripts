@@ -1,9 +1,10 @@
 on script load:
-  set {-itv_player_name} to "henry_ys" # into the void
+  set {-itv_player_name} to "null" # into the void
   set {-ws_player_name} to "alexdash0080" # worldshaper
   set {-nm_player_name} to "AtALPHA01" # necromancer
   set {-pg_player_name} to "null" # portal gun
   set {-mr_player_name} to "sunnyho120" # mirage
+  set {-qc_player_name} to "henry_ys" # quincy
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -28,4 +29,11 @@ command /ability <player=%event-player%>:
       send "%name of arg-1% - &2&lApex - Life of the Party" to event-player
       send "Deploy a team of decoys to distract enemies. Decoys last for a set amount of time and will explode when attacked by players." to event-player
       send "&7Activation: off hand" to event-player
-      send "&7Charge up: 2+0.75s   Duration: 45s   Cool down: 45s" to event-player
+      send "&7Charge up: 2+1s   Duration: 45s   Cool down: 45s" to event-player
+    if name of arg-1 is {-qc_player_name}:
+      send "%name of arg-1% - &2&lBTD6 - Quincy" to event-player
+      send "Rapid shot: Rapidly shoot arrows without needing to hold a bow." to event-player
+      send "Storm of Arrows: Throw an ender pearl with the off hand to determine location. Once the ender pearl hits, summon a barrage of arrows from the sky tracking entities in range." to event-player
+      send "Passive ability: Arrows fired from a bow travel in a straight line and do not reduce the durability of the bow." to event-player
+      send "&7Activation: off hand (Rapid Shot)   off hand + sneaking (Storm of Arrows)" to event-player
+      send "&7Charge up: 0s   Duration: 3s   Cool down: 15s" to event-player

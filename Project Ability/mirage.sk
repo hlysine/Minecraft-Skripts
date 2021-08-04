@@ -101,7 +101,7 @@ on rightclick:
               set {_id} to last created citizen id
               add {_id} to {-mr_citizens::*}
 
-            wait 5 ticks
+            wait 10 ticks
 
             loop {-mr_citizens::*}:
               if chestplate of event-player is elytra:
@@ -132,11 +132,11 @@ on rightclick:
             teleport event-player to {_loc}
 
             set name of sidebar of event-player to "Clones"
-            create bossbar titled "&dMirage" and id "mirage" for event-player with progress 100 with colors purple
+            create bossbar titled "&dLife of the Party" and id "mirage" for event-player with progress 100 with colors purple
             loop 90 times:
               if size of {-mr_citizens::*} is less than 1:
                 continue
-              set bossbar "mirage" value to 100 - loop-value / 90 * 100
+              set bossbar "mirage" value to 100 - loop-number / 90 * 100
               set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
               wait 0.5 seconds
             wipe event-player sidebar
