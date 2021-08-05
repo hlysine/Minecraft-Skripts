@@ -94,7 +94,7 @@ on rightclick:
 
           mr_clear_citizens()
 
-          loop blocks in radius 6 around player:
+          loop blocks in radius 4 around player:
             if loop-block is air:
               if block above loop-block is air:
                 if block below loop-block is not air or water or lava or fire or magma block:
@@ -159,7 +159,7 @@ on rightclick:
 
 function mr_trigger_hit(c: number):
   set {-mr_explode} to true
-  create safe explosion of strength 4 at location of citizen {_c}
+  create safe explosion of strength 3 at location of citizen {_c}
   wait 1 tick
   set {-mr_explode} to false
   remove citizen {_c}
