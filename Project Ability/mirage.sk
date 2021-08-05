@@ -8,6 +8,7 @@ function mr_clear_citizens():
   clear {-mr_citizens::*}
 
 on load:
+  set {-mr_explode} to false
   clear {-mr_player}
   loop all players:
     if name of loop-player is {-mr_player_name}:
@@ -35,7 +36,7 @@ function mr_track_citizen(p: player, c: number):
   set {_prevTarget} to "<none>"
   loop 90 times:
     if citizen {_c} is not alive:
-      continue loop
+      exit loop
 
     set {_target} to "<none>"
     if "%target of {_p}%" is not "<none>":
@@ -141,7 +142,7 @@ on rightclick:
             create bossbar titled "&dLife of the Party" and id "mirage" for event-player with progress 100 with colors purple
             loop 90 times:
               if size of {-mr_citizens::*} is less than 1:
-                continue
+                exit loop
               set bossbar "mirage" value to 100 - loop-number / 90 * 100
               set score "Clones left" in sidebar of event-player to size of {-mr_citizens::*}
               wait 0.5 seconds
@@ -156,24 +157,24 @@ on rightclick:
             set {mr_ability_active} to false
             set {mr_cooling_down} to false
 
-function trigger_hit(c: number):
-  play 10 of explosion at citizen {_c} offset by vector(1, 1, 1) with extra 0.1
-  play sound "entity.generic.explode" at citizen {_c}
-  loop all entities in radius 4 around location of citizen {_c}:
-    if name of loop-entity is not {-mr_player_name}:
-      if loop-entity is player:
-        make {-mr_player} damage loop-entity by 14
-      else:
-        damage loop-entity by 7 hearts
+function mr_trigger_hit(c: number):
+  set {-mr_explode} to true
+  create safe explosion of strength 4 at location of citizen {_c}
+  wait 1 tick
+  set {-mr_explode} to false
   remove citizen {_c}
   remove {_c} from {-mr_citizens::*}
 
 on citizen left click:
-  trigger_hit(event-number)
+  mr_trigger_hit(event-number)
 
 on damage:
   if victim is citizen:
-    trigger_hit(citizen id of victim)
+    mr_trigger_hit(citizen id of victim)
+  else if name of victim is {-mr_player_name}:
+    if damage cause is block explosion:
+      if {-mr_explode} is true:
+        cancel event
 
 on target:
   if name of target is {-mr_player_name}:

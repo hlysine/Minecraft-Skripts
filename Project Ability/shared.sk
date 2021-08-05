@@ -5,6 +5,7 @@ on script load:
   set {-pg_player_name} to "null" # portal gun
   set {-mr_player_name} to "sunnyho120" # mirage
   set {-qc_player_name} to "null" # quincy
+  set {-ads_player_name} to "null" # active defense system
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -41,6 +42,12 @@ command /ability <player=%event-player%>:
       send "Passive ability: Arrows fired from a bow in main hand travel in a straight line and do not reduce the durability of the bow." to event-player
       send "&7Activation: main hand" to event-player
       send "&7Charge up: 0s   Duration: 5s   Cool down: 15s" to event-player
+      set {_done} to true
+    if name of arg-1 is {-ads_player_name}:
+      send "%name of arg-1% - &2&lR6 - Active Defense System" to event-player
+      send "Use an ender pearl to place the ADS device. After a short charge up, the device will block most incoming projectiles and delayed explosion sources. Can be safely destroyed by placer, but will explode if destroyed by others." to event-player
+      send "&7Activation: main hand" to event-player
+      send "&7Charge up: 0+2s   Duration: infinite   Cool down: 120s" to event-player
       set {_done} to true
     if {_done} is false:
       send "&cCannot find %name of arg-1%'s ability"

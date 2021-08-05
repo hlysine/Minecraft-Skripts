@@ -1,0 +1,148 @@
+variables:
+  {ads_cooling_down} = false
+
+function ads_cooldown(p: player):
+  set the cooldown of ender pearl for {_p} to 120 seconds
+  loop 1200 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {ads_cooling_down} to false
+
+function ads_should_trigger(c: entity) :: boolean:
+  if name of shooter of {_c} is {-ads_player_name}:
+    return false
+  if "%{_c}%" is "creeper":
+    if {_c} is alive:
+      if tag "ignited" of nbt of {_c} is 1:
+        return true
+      else if target of {_c} is player:
+        return true
+  else if "%{_c}%" is "thrown potion":
+    return true
+  else if {_c} is arrow:
+    return true
+  else if {_c} is spectral arrow:
+    return true
+  else if {_c} is large fireball:
+    return true
+  else if {_c} is small fireball:
+    return true
+  else if {_c} is tnt:
+    return true
+  return false
+
+function ads_update_display(p: player):
+  if size of {ads_device_uuids::*} is greater than 0:
+    set name of sidebar of {_p} to "ADS"
+    set score "ADS placed" in sidebar of {_p} to size of {ads_device_uuids::*}
+  else:
+    wipe {_p} sidebar
+
+function ads_track_device(p: player, c: entity):
+  set {_beam} to 0
+  while {_c} is alive:
+    if random integer between 1 and 5 is 1:
+      play 1 of end_rod at {_c} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    if {_beam} is less than 1:
+      clear crystal beam of {_c}
+    else:
+      set {_beam} to {_beam} - 1
+    loop all entities in radius 10 around location of {_c}:
+      if ads_should_trigger(loop-entity):
+        set crystal beam of {_c} to location of loop-entity offset by vector 0, -2, 0
+        set {_beam} to 5
+        play 5 of poof at loop-entity offset by vector(0.1, 0.1, 0.1) with extra 0.01
+        play sound "entity.generic.extinguish_fire" at volume 0.1 at loop-entity
+        kill loop-entity
+        exit loop
+    wait 1 tick
+  remove uuid of {_c} from {ads_device_uuids::*}
+  ads_update_display({-ads_player})
+
+function ads_setup_device(p: player, c: entity):
+  ads_update_display({_p})
+  loop 20 times:
+    play 2 of poof at {_c} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 second
+  ads_track_device({_p}, {_c})
+
+function ads_retrack_all(p: player):
+  loop all entities:
+    if list {ads_device_uuids::*} contains uuid of loop-entity:
+      ads_track_device({_p}, loop-entity)
+  loop {ads_device_uuids::*}:
+    set {_uuid} to loop-value
+    set {_found} to false
+    loop all entities:
+      if uuid of loop-entity is {_uuid}:
+        set {_found} to true
+        exit loop
+    if {_found} is false:
+      remove {_uuid} from {ads_device_uuids::*}
+  ads_update_display({_p})
+
+on load:
+  set {-ads_explode} to false
+  clear {-ads_player}
+  clear {-ads_explode::*}
+  loop all players:
+    if name of loop-player is {-ads_player_name}:
+      set {-ads_player} to loop-player
+  if {-ads_player} is set:
+    ads_retrack_all({-ads_player})
+
+on join:
+  if event-player's name is {-ads_player_name}:
+    set {-ads_player} to event-player
+    ads_retrack_all({-ads_player})
+    set {ads_cooling_down} to true
+    ads_cooldown(event-player)
+
+on rightclick:
+  if event-player is holding ender pearl in main hand:
+    if event-player's name is {-ads_player_name}:
+      cancel event
+      if size of {ads_device_uuids::*} is less than 1:
+        if {ads_cooling_down} is false:
+          # pre-activation
+          set {ads_cooling_down} to true
+
+          if game mode of event-player is not creative:
+            remove 1 of ender pearl from event-player's inventory
+
+          set {_block} to event-player's exact target block
+          if distance between location of event-player and location at {_block} is less than 5:
+            if block above {_block} is air:
+              set {_loc} to location at block above {_block} offset by vector 0, 0.5, 0
+              show happy villager at cube outline at {_loc} with radius 10 and density 5
+              spawn end crystal at {_loc} with nbt "{ShowBottom:1b}"
+              set name of last spawned entity to "Active Defense System"
+              add uuid of last spawned entity to {ads_device_uuids::*}
+              ads_setup_device(event-player, last spawned entity)
+
+              ads_cooldown(event-player)
+            else:
+              set {ads_cooling_down} to false
+          else:
+            set {ads_cooling_down} to false
+
+function ads_trigger_hit(c: entity):
+  set {-ads_explode} to true
+  create safe explosion of strength 4 at location of {_c}
+  wait 1 tick
+  set {-ads_explode} to false
+
+on damage:
+  if type of victim is end crystal:
+    if list {ads_device_uuids::*} contains uuid of victim:
+      cancel event
+      if damage cause is attack:
+        if name of attacker is not {-ads_player_name}:
+          ads_trigger_hit(victim)
+        remove uuid of victim from {ads_device_uuids::*}
+        kill victim
+        ads_update_display({-ads_player})
+  else if name of victim is {-ads_player_name}:
+    if damage cause is block explosion:
+      if {-ads_explode} is true:
+        cancel event

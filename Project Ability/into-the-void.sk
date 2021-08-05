@@ -64,7 +64,7 @@ on rightclick:
           set {_last_location} to location of event-player
           loop 100 times:
             if {itv_ability_active} is false:
-              continue
+              exit loop
             set bossbar "into-the-void" value to 100 - loop-number
             if "%block above event-player%" parsed as item type is occluding:
               teleport event-player to {_last_location}
