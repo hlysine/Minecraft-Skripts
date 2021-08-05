@@ -8,8 +8,8 @@ on load:
 
 function bh_cooldown(p: player):
   wait 1 tick
-  set the cooldown of ender pearl for {_p} to 60 seconds
-  loop 600 times:
+  set the cooldown of ender pearl for {_p} to 50 seconds
+  loop 500 times:
     play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
     wait 0.1 seconds
   set {bh_cooling_down} to false
@@ -46,7 +46,7 @@ on projectile hit:
         # Correct hit location of pearl
         set {_p} to location of projectile
 
-        show happy villager at cube outline at {_p} with radius 5 and density 5
+        show happy villager at cube outline at {_p} with radius 6 and density 5
 
         loop 10 times:
           play 2 of poof at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
@@ -57,20 +57,25 @@ on projectile hit:
           set {_loop} to {_loop} - 1
           if {_loop} is 0:
             set {_loop} to 20
-          loop all entities in radius 5 around {_p}:
+          loop all entities in radius 6 around {_p}:
             if loop-entity is not projectile:
               if gamemode of loop-entity is not spectator:
                 set {_dist} to distance between location of loop-entity and {_p}
-                push loop-entity direction from location of loop-entity to {_p} at speed min(2, 1 / {_dist})
                 set {_v} to velocity of loop-entity
-                set vector length of {_v} to min(vector length of {_v}, 0.5)
+                if vector length of {_v} is greater than 0.1:
+                  set vector length of {_v} to 0.1
+                set {_v2} to vector from location of loop-entity to {_p}
+                set vector length of {_v2} to min(1, 2 / {_dist})
+                set {_v} to {_v} ++ {_v2}
+                set {_vl} to vector length of {_v}
+                set vector length of {_v} to min(vector length of {_v}, 0.6)
                 set velocity of loop-entity to {_v}
                 if {_loop} is 1:
                   damage loop-entity by 0.5 hearts
           set y-coordinate of {_p} to y-coordinate of {_p} + 0.05
           play 5 of dragon_breath at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
           if {_loop} is 20:
-            show happy villager at cube outline at {_p} with radius 5 and density 3
+            show happy villager at cube outline at {_p} with radius 6 and density 3
           wait 1 tick
 
         set {bh_ability_active} to false

@@ -71,6 +71,10 @@ on rightclick:
             set {_last_location} to location of event-player
             play 10 of dragon breath at event-player offset by vector(0.5, 1, 0.5) with extra 0.02
             wait 1 tick
+          if {itv_ability_active} is false:
+            set {_loc} to location of event-player
+            set y-coordinate of {_loc} to y-coordinate of {_loc} + 1
+            teleport event-player to {_loc}
           if "%block above event-player%" parsed as item type is occluding:
             teleport event-player to {_last_location}
           remove bossbar "into-the-void"

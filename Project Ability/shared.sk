@@ -54,7 +54,7 @@ command /ability <player=%event-player%>:
       send "%name of arg-1% - &2&lOverwatch - Graviton Surge" to event-player
       send "Throw an ender pearl to determine location. Once the ender pearl hits, create a black hole that attracts all entities and deals damage continuously. The black hole rises slowly and throws entities away when it times out." to event-player
       send "&7Activation: main hand" to event-player
-      send "&7Charge up: 0+1s   Duration: 10s   Cool down: 60s" to event-player
+      send "&7Charge up: 0+1s   Duration: 10s   Cool down: 50s" to event-player
       set {_done} to true
     if {_done} is false:
       send "&cCannot find %name of arg-1%'s ability"
