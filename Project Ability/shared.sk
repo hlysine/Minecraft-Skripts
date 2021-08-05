@@ -6,6 +6,7 @@ on script load:
   set {-mr_player_name} to "sunnyho120" # mirage
   set {-qc_player_name} to "null" # quincy
   set {-ads_player_name} to "null" # active defense system
+  set {-bh_player_name} to "KRKirian" # black hole
 
 command /ability <player=%event-player%>:
   description: Check out a specific player's ability
@@ -48,6 +49,12 @@ command /ability <player=%event-player%>:
       send "Use an ender pearl to place the ADS device. After a short charge up, the device will block most incoming projectiles and delayed explosion sources. Can be safely destroyed by placer, but will explode if destroyed by others." to event-player
       send "&7Activation: main hand" to event-player
       send "&7Charge up: 0+2s   Duration: infinite   Cool down: 120s" to event-player
+      set {_done} to true
+    if name of arg-1 is {-bh_player_name}:
+      send "%name of arg-1% - &2&lOverwatch - Graviton Surge" to event-player
+      send "Throw an ender pearl to determine location. Once the ender pearl hits, create a black hole that attracts all entities and deals damage continuously. The black hole rises slowly and throws entities away when it times out." to event-player
+      send "&7Activation: main hand" to event-player
+      send "&7Charge up: 0+1s   Duration: 10s   Cool down: 60s" to event-player
       set {_done} to true
     if {_done} is false:
       send "&cCannot find %name of arg-1%'s ability"

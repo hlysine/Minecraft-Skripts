@@ -1,0 +1,93 @@
+variables:
+  {bh_ability_active} = false
+  {bh_cooling_down} = false
+
+on load:
+  clear {-bh_ender_pearl_hitting::*}
+  clear {-bh_ender_pearl_flying::*}
+
+function bh_cooldown(p: player):
+  wait 1 tick
+  set the cooldown of ender pearl for {_p} to 60 seconds
+  loop 600 times:
+    play 2 of electric spark at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+    wait 0.1 seconds
+  set {bh_cooling_down} to false
+
+on join:
+  if event-player's name is {-bh_player_name}:
+    set {bh_cooling_down} to true
+    bh_cooldown(event-player)
+
+on shoot:
+  if shooter's name is {-bh_player_name}:
+    if shooter is holding ender pearl in main hand:
+      if projectile is ender pearl:
+        if {bh_cooling_down} is false:
+          set {bh_cooling_down} to true
+          set {bh_ability_active} to true
+          set {-bh_ender_pearl_flying::%uuid of projectile%} to true
+
+          # Kill pearl if it doesn't hit anything
+          wait 5 seconds
+
+          delete {-bh_ender_pearl_flying::%uuid of projectile%}
+
+          kill projectile
+        else:
+          cancel event
+
+on projectile hit:
+  if projectile is ender pearl:
+    if {-bh_ender_pearl_flying::%uuid of projectile%} is set:
+      if shooter's name is {-bh_player_name}:
+        set {-bh_ender_pearl_hitting::%uuid of shooter%} to true
+
+        # Correct hit location of pearl
+        set {_p} to location of projectile
+
+        show happy villager at cube outline at {_p} with radius 5 and density 5
+
+        loop 10 times:
+          play 2 of poof at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+          wait 0.1 second
+
+        set {_loop} to 20
+        loop 200 times:
+          set {_loop} to {_loop} - 1
+          if {_loop} is 0:
+            set {_loop} to 20
+          loop all entities in radius 5 around {_p}:
+            if loop-entity is not projectile:
+              if gamemode of loop-entity is not spectator:
+                set {_dist} to distance between location of loop-entity and {_p}
+                push loop-entity direction from location of loop-entity to {_p} at speed min(2, 1 / {_dist})
+                set {_v} to velocity of loop-entity
+                set vector length of {_v} to min(vector length of {_v}, 0.5)
+                set velocity of loop-entity to {_v}
+                if {_loop} is 1:
+                  damage loop-entity by 0.5 hearts
+          set y-coordinate of {_p} to y-coordinate of {_p} + 0.05
+          play 5 of dragon_breath at {_p} offset by vector(0.5, 0.5, 0.5) with extra 0.02
+          if {_loop} is 20:
+            show happy villager at cube outline at {_p} with radius 5 and density 3
+          wait 1 tick
+
+        set {bh_ability_active} to false
+        bh_cooldown(shooter)
+
+        wait 1 tick
+        delete {-bh_ender_pearl_hitting::%uuid of shooter%}
+        delete {-bh_ender_pearl_flying::%uuid of projectile%}
+
+on teleport:
+  if event-player's name is {-bh_player_name}:
+    if "%teleport cause%" is "ender pearl":
+      if {-bh_ender_pearl_hitting::%uuid of event-player%} is set:
+        cancel event
+
+on damage:
+  if victim's name is {-bh_player_name}:
+    if damage cause is fall:
+      if {-bh_ender_pearl_hitting::%uuid of victim%} is set:
+        cancel event
